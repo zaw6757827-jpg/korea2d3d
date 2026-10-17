@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Millionaire - Korea</title>
+    <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pyidaungsu', 'Myanmar Text', sans-serif;
+        }
+        body {
+            background-color: #ffffff;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        body.dark-mode .top-bar {
+            background-color: #1f1f1f;
+        }
+        body.dark-mode .main-display {
+            background-color: #121212;
+        }
+        body.dark-mode .live-number {
+            color: #64b5f6;
+        }
+        body.dark-mode .action-btn {
+            background-color: #1e1e1e;
+            color: #64b5f6;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        body.dark-mode .modal-content, body.dark-mode .admin-content {
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        body.dark-mode .history-body {
+            background-color: #121212;
+        }
+        body.dark-mode .th3d-card {
+            background: #2a2a2a;
+            border-color: #333;
+        }
+        body.dark-mode .th3d-left .th3d-label, 
+        body.dark-mode .th3d-left .th3d-date, 
+        body.dark-mode .th3d-right .th3d-title, 
+        body.dark-mode .th3d-right .th3d-number {
+            color: #64b5f6;
+        }
+        body.dark-mode .setting-box {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: #2196f3;
+            color: #ffffff;
+            padding: 15px 20px;
+            font-size: 22px;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        /* Main Display Section */
+        .main-display {
+            text-align: center;
+            padding: 15px 15px 10px 15px;
+            background: #ffffff;
+        }
+        
+        @keyframes slowFade {
+            0% { opacity: 0.1; }
+            50% { opacity: 1; }
+            100% { opacity: 0.1; }
+        }
+
+        .live-number {
+            font-size: 100px;
+            font-weight: bold;
+            color: #2196f3;
+            margin: 0;
+            letter-spacing: 3px;
+            line-height: 1.1;
+        }
+
+        .live-number.animating {
+            animation: slowFade 3.5s infinite ease-in-out;
+        }
+
+        .update-status {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            font-size: 15px;
+            color: #2196f3;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+        .check-icon {
+            display: none;
+            width: 18px;
+            height: 18px;
+            stroke: #2196f3;
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        /* Time Slots Grid (ဘယ်ညာ အနေတော် ညီညာစေရန် Padding နှင့် Gap ကို ချိန်ညှိထားသည်) */
+        .slots-container {
+            padding: 12px 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .slot-card {
+            background-color: #2196f3;
+            color: white;
+            border-radius: 45px;
+            padding: 12px 12px 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+        .slot-card .time-text {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            white-space: nowrap;
+            margin-right: 6px;
+        }
+        .slot-card .slot-result {
+            background-color: white;
+            color: #2196f3;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 21px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* Bottom Action Buttons Container */
+        .bottom-buttons-container {
+            padding: 15px 16px 25px 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .action-btn {
+            background-color: #ffffff;
+            color: #2196f3;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 10px;
+            font-size: 17px;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .action-btn:active {
+            transform: scale(0.97);
+            background-color: #f5f5f5;
+        }
+
+        /* Closed / Holiday Banner */
+        #closedBanner {
+            display: none;
+            background-color: #ffebee;
+            color: #c62828;
+            text-align: center;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            border-bottom: 2px solid #ef9a9a;
+        }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: #ffffff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .history-header {
+            background: #2196f3;
+            color: white;
+            padding: 15px 20px;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .history-header span { cursor: pointer; font-size: 24px; }
+        .history-body {
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .history-date-badge {
+            background-color: #2196f3;
+            color: white;
+            text-align: center;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px auto 15px auto;
+        }
+        .history-date-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .history-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .history-slot-card {
+            background-color: #2196f3;
+            color: white;
+            border-radius: 40px;
+            padding: 8px 12px 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .history-slot-card .time-text {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .history-slot-card .slot-result {
+            background-color: white;
+            color: #2196f3;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 17px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* 3D Results Custom Card Styling */
+        .th3d-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .th3d-left .th3d-label {
+            font-size: 15px;
+            color: #2196f3;
+            font-weight: bold;
+        }
+        .th3d-left .th3d-date {
+            font-size: 18px;
+            color: #2196f3;
+            font-weight: bold;
+            margin-top: 3px;
+        }
+        .th3d-right {
+            text-align: right;
+        }
+        .th3d-right .th3d-title {
+            font-size: 15px;
+            color: #2196f3;
+            font-weight: bold;
+        }
+        .th3d-right .th3d-number {
+            font-size: 22px;
+            color: #2196f3;
+            font-weight: bold;
+            margin-top: 3px;
+            letter-spacing: 1px;
+        }
+
+        /* Sound & Theme Settings Modal Styles */
+        .setting-box {
+            background: #f5f5f5;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Holidays Modal Box Style */
+        .holiday-modal-box {
+            background-color: #ffebee;
+            color: #c62828;
+            text-align: center;
+            padding: 25px 20px;
+            font-weight: bold;
+            font-size: 20px;
+            border-radius: 12px;
+            border: 2px solid #ef9a9a;
+            box-shadow: 0 4px 10px rgba(198, 40, 40, 0.1);
+        }
+
+        /* Admin Panel Styling */
+        .admin-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .admin-content h3 { color: #2196f3; margin-bottom: 15px; text-align: center; }
+        .admin-section-title { font-size: 16px; font-weight: bold; color: #333; margin: 15px 0 8px 0; border-bottom: 2px solid #2196f3; padding-bottom: 4px; }
+        .holiday-box { background: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-weight: bold; }
+        .admin-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: center; }
+        .admin-row input { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .admin-row input.time-input { width: 40%; }
+        .admin-row input.res-input { width: 60%; }
+        .admin-btn { background: #2196f3; color: white; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .admin-reset { background: #ff9800; }
+        .admin-close { background: #d32f2f; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar" id="adminTrigger">
+        Millionaire - Korea
+    </div>
+
+    <!-- Closed Banner -->
+    <div id="closedBanner">Closed Every Wednesday</div>
+
+    <!-- Main Display View -->
+    <div class="main-display">
+        <div class="live-number animating" id="main-number">&nbsp;</div>
+        <div class="update-status">
+            <svg class="check-icon" id="check-mark" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span id="update-text">Closed - --</span>
+        </div>
+    </div>
+
+    <!-- Time Slots Grid -->
+    <div class="slots-container" id="slots-grid">
+        <!-- Dynamically rendered slots -->
+    </div>
+
+    <!-- Bottom Buttons -->
+    <div class="bottom-buttons-container">
+        <button class="action-btn" onclick="openThai3DModal()">Thai 3D Results</button>
+        <button class="action-btn" onclick="openHistoryModalFromButton()">2D Results</button>
+        <button class="action-btn" onclick="openSettingsModal()">Korea 3D</button>
+        <button class="action-btn" onclick="openHolidaysModal()">Holidays</button>
+    </div>
+
+    <!-- Thai 3D Results Modal -->
+    <div class="modal" id="thai3DModal">
+        <div class="modal-content">
+            <div class="history-header">
+                <span onclick="closeThai3DModal()">❮</span>
+                <div>MM 3D Results</div>
+            </div>
+            <div class="history-body" id="thai3d-body-content">
+                <!-- Dynamically rendered 3D results -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Holidays Modal -->
+    <div class="modal" id="holidaysModal">
+        <div class="modal-content">
+            <div class="history-header">
+                <span onclick="closeHolidaysModal()">❮</span>
+                <div>Holidays Information</div>
+            </div>
+            <div class="history-body">
+                <div class="holiday-modal-box">
+                    Closed Every Wednesday
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sound & Theme Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="history-header">
+                <span onclick="closeSettingsModal()">❮</span>
+                <div>Sound & Theme Settings</div>
+            </div>
+            <div class="history-body">
+                <div class="setting-box">
+                    <span>Dark Mode</span>
+                    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" style="width: 24px; height: 24px; cursor: pointer;">
+                </div>
+                <div class="setting-box">
+                    <span>Sound Effects</span>
+                    <input type="checkbox" id="soundToggle" style="width: 24px; height: 24px; cursor: pointer;">
+                </div>
+                <div class="setting-box">
+                    <span>Vibration</span>
+                    <input type="checkbox" id="vibrateToggle" style="width: 24px; height: 24px; cursor: pointer;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2D History Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="history-header">
+                <span onclick="closeHistoryModal()">❮</span>
+                <div>History</div>
+            </div>
+            <div class="history-body" id="history-body-content">
+                <!-- Dynamically rendered history by date -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div class="modal" id="adminModal">
+        <div class="admin-content">
+            <h3>⚙️ Admin Panel</h3>
+            
+            <div id="admin-slots-inputs">
+                <!-- Dynamic Inputs -->
+            </div>
+
+            <div class="admin-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Thai 3D Results</span>
+                <button type="button" onclick="addNew3DRow()" style="background:#4caf50; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:13px; cursor:pointer;">+ Add New</button>
+            </div>
+            <div id="admin-3d-inputs">
+                <!-- Dynamic 3D Inputs -->
+            </div>
+
+            <div class="admin-section-title">2D Results & Holidays</div>
+            <div class="holiday-box">
+                <span>Holidays:</span>
+                <input type="checkbox" id="adm-isClosed" style="width: 24px; height: 24px; cursor: pointer;">
+            </div>
+
+            <div class="admin-section-title">📅 Delete History by Date</div>
+            <div style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 6px;">Select Date:</div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="date" id="adm-delete-date" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;">
+                    <button type="button" onclick="deleteHistoryByCalendar()" style="background: #d32f2f; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer;">Delete</button>
+                </div>
+            </div>
+
+            <button class="admin-btn" onclick="saveAdminData()">Save Data</button>
+            <button class="admin-btn admin-reset" onclick="resetAdminData()">Reset to Default (??)</button>
+            <button class="admin-btn admin-close" onclick="closeAdminModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const BIN_ID = '6ad31aeeffd5d1605372eb09'; 
+        const API_KEY = '$2a$10$iWcJdR8oqYGgxXS0gO8CC.FoqcRlj2gS2GbYyLNYUpJbbcfACOlra';
+
+        const defaultSlots = [
+            { timeText: "1:00 PM", hour: 13, min: 0, key: "01:00", result: "??" },
+            { timeText: "2:00 PM", hour: 14, min: 0, key: "02:00", result: "??" },
+            { timeText: "3:00 PM", hour: 15, min: 0, key: "03:00", result: "??" },
+            { timeText: "6:00 PM", hour: 18, min: 0, key: "06:00", result: "??" },
+            { timeText: "7:00 PM", hour: 19, min: 0, key: "07:00", result: "??" },
+            { timeText: "8:00 PM", hour: 20, min: 0, key: "08:00", result: "??" }
+        ];
+
+        const defaultThai3D = [
+            { date: "16/10/2026", result: "781" },
+            { date: "01/10/2026", result: "701" },
+            { date: "16/09/2026", result: "640" },
+            { date: "01/09/2026", result: "212" },
+            { date: "16/08/2026", result: "615" },
+            { date: "01/08/2026", result: "479" }
+        ];
+
+        let cloudData = { 
+            isClosed: false,
+            slots: JSON.parse(JSON.stringify(defaultSlots)),
+            thai3d: JSON.parse(JSON.stringify(defaultThai3D))
+        };
+
+        let memoryHistory = {};
+        let cachedRandomNum = "00";
+
+        function loadLocalHistory() {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    let saved = localStorage.getItem('korea_2d_history');
+                    if(saved) {
+                        memoryHistory = JSON.parse(saved);
+                    }
+                }
+            } catch(e) {}
+        }
+
+        function saveLocalHistory() {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem('korea_2d_history', JSON.stringify(memoryHistory));
+                }
+            } catch(e) {}
+        }
+
+        function getMyanmarTime() {
+            let now = new Date();
+            let utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            return new Date(utc + (3600000 * 6.5));
+        }
+
+        function updateMemoryHistory(dateStr, slots) {
+            memoryHistory[dateStr] = JSON.parse(JSON.stringify(slots));
+            saveLocalHistory();
+        }
+
+        async function fetchCloudData() {
+            loadLocalHistory();
+            try {
+                let response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                let json = await response.json();
+                if(json && json.record) {
+                    cloudData.isClosed = json.record.isClosed || false;
+                    if(Array.isArray(json.record.slots)) {
+                        cloudData.slots = json.record.slots;
+                    }
+                    if(Array.isArray(json.record.thai3d)) {
+                        cloudData.thai3d = json.record.thai3d;
+                    }
+                }
+            } catch (e) {}
+            
+            let myTime = getMyanmarTime();
+            let year = myTime.getFullYear();
+            let month = String(myTime.getMonth() + 1).padStart(2, '0');
+            let day = String(myTime.getDate()).padStart(2, '0');
+            let currentDateStr = `${year}-${month}-${day}`;
+            
+            updateMemoryHistory(currentDateStr, cloudData.slots);
+            renderUI();
+        }
+
+        function renderUI() {
+            let closedBanner = document.getElementById('closedBanner');
+            if (cloudData.isClosed) {
+                closedBanner.style.display = 'block';
+            } else {
+                closedBanner.style.display = 'none';
+            }
+
+            let slotsGrid = document.getElementById('slots-grid');
+            slotsGrid.innerHTML = '';
+
+            let myTime = getMyanmarTime();
+            let curH = myTime.getHours();
+            let curM = myTime.getMinutes();
+            let curS = myTime.getSeconds();
+
+            let year = myTime.getFullYear();
+            let month = String(myTime.getMonth() + 1).padStart(2, '0');
+            let day = String(myTime.getDate()).padStart(2, '0');
+            let currentDateStr = `${year}-${month}-${day}`;
+            
+            let h12 = curH % 12 || 12;
+            let ampm = curH >= 12 ? 'PM' : 'AM';
+            let timeStr = `${String(h12).padStart(2, '0')}:${String(curM).padStart(2, '0')}:${String(curS).padStart(2, '0')} ${ampm}`;
+            let dateStr = `${currentDateStr} ${timeStr}`;
+
+            let activeLockedResult = null;
+            let isLockedState = false;
+            let isFreezeBefore = false;
+            let curTotalSec = curH * 3600 + curM * 60 + curS;
+
+            if(Array.isArray(cloudData.slots)) {
+                cloudData.slots.forEach((slot) => {
+                    let slotTotalSec = Number(slot.hour) * 3600 + Number(slot.min) * 60;
+                    let diffSec = curTotalSec - slotTotalSec; 
+                    
+                    let displayResult = "??";
+                    if (diffSec >= 0 && slot.result && slot.result !== "??") {
+                        displayResult = slot.result;
+                    }
+
+                    if (diffSec >= 0 && diffSec <= 1200) {
+                        if (slot.result && slot.result !== "??") {
+                            activeLockedResult = slot.result;
+                            isLockedState = true;
+                        }
+                    }
+
+                    if (diffSec >= -5 && diffSec < 0) {
+                        if (slot.result && slot.result !== "??") {
+                            activeLockedResult = slot.result;
+                            isFreezeBefore = true;
+                        }
+                    }
+
+                    let parts = slot.timeText.split(' ');
+                    let tTime = parts[0] || slot.timeText;
+                    let tAmpm = parts[1] || '';
+
+                    let card = document.createElement('div');
+                    card.className = 'slot-card';
+                    card.innerHTML = `
+                        <div class="time-text"><span>${tTime}</span> <span>${tAmpm}</span></div>
+                        <div class="slot-result">${displayResult}</div>
+                    `;
+                    slotsGrid.appendChild(card);
+                });
+            }
+
+            updateMemoryHistory(currentDateStr, cloudData.slots);
+
+            let mainNumEl = document.getElementById('main-number');
+            let checkMarkEl = document.getElementById('check-mark');
+            let updateTextEl = document.getElementById('update-text');
+
+            if (cloudData.isClosed) {
+                mainNumEl.classList.remove('animating');
+                mainNumEl.innerHTML = "&nbsp;";
+                if(checkMarkEl) checkMarkEl.style.display = "none";
+                updateTextEl.innerText = `Closed - ${dateStr}`;
+            } else if (isLockedState && activeLockedResult) {
+                mainNumEl.classList.remove('animating');
+                mainNumEl.innerText = activeLockedResult;
+                
+                let matchedSlot = cloudData.slots.find(s => s.result === activeLockedResult);
+                if (matchedSlot) {
+                    let sSec = Number(matchedSlot.hour) * 3600 + Number(matchedSlot.min) * 60;
+                    if (curTotalSec >= sSec) {
+                        if(checkMarkEl) checkMarkEl.style.display = "inline-block";
+                    } else {
+                        if(checkMarkEl) checkMarkEl.style.display = "none";
+                    }
+                }
+                updateTextEl.innerText = `Updated - ${dateStr}`;
+            } else if (isFreezeBefore && activeLockedResult) {
+                mainNumEl.classList.add('animating');
+                mainNumEl.innerText = activeLockedResult;
+                if(checkMarkEl) checkMarkEl.style.display = "none";
+                updateTextEl.innerText = `Updated - ${dateStr}`;
+            } else {
+                if(checkMarkEl) checkMarkEl.style.display = "none";
+                mainNumEl.classList.add('animating');
+                
+                if (curS % 5 === 0 && !window._lastRandSec) {
+                    cachedRandomNum = Math.floor(Math.random() * 90).toString().padStart(2, '0');
+                    window._lastRandSec = curS;
+                } else if (curS % 5 !== 0) {
+                    window._lastRandSec = null;
+                }
+                
+                mainNumEl.innerText = cachedRandomNum;
+                updateTextEl.innerText = `Updated - ${dateStr}`;
+            }
+        }
+
+        function openThai3DModal() {
+            let container = document.getElementById('thai3d-body-content');
+            container.innerHTML = '';
+
+            let list = cloudData.thai3d || defaultThai3D;
+            if(list.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No records found.</div>';
+            } else {
+                list.forEach(item => {
+                    container.innerHTML += `
+                        <div class="th3d-card">
+                            <div class="th3d-left">
+                                <div class="th3d-label">Date</div>
+                                <div class="th3d-date">${item.date}</div>
+                            </div>
+                            <div class="th3d-right">
+                                <div class="th3d-title">3D</div>
+                                <div class="th3d-number">${item.result}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('thai3DModal').style.display = 'flex';
+        }
+
+        function closeThai3DModal() {
+            document.getElementById('thai3DModal').style.display = 'none';
+        }
+
+        function openHolidaysModal() {
+            document.getElementById('holidaysModal').style.display = 'flex';
+        }
+
+        function closeHolidaysModal() {
+            document.getElementById('holidaysModal').style.display = 'none';
+        }
+
+        function openSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function toggleDarkMode() {
+            let isDark = document.getElementById('darkModeToggle').checked;
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                try {
+                    if (typeof localStorage !== 'undefined') localStorage.setItem('korea_dark_mode', 'true');
+                } catch(e) {}
+            } else {
+                document.body.classList.remove('dark-mode');
+                try {
+                    if (typeof localStorage !== 'undefined') localStorage.setItem('korea_dark_mode', 'false');
+                } catch(e) {}
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                if (typeof localStorage !== 'undefined') {
+                    let savedDark = localStorage.getItem('korea_dark_mode');
+                    if (savedDark === 'true') {
+                        document.body.classList.add('dark-mode');
+                        let toggleEl = document.getElementById('darkModeToggle');
+                        if(toggleEl) toggleEl.checked = true;
+                    }
+                }
+            } catch(e) {}
+        });
+
+        function openHistoryModalFromButton() {
+            let historyBody = document.getElementById('history-body-content');
+            historyBody.innerHTML = '';
+
+            let sortedDates = Object.keys(memoryHistory).sort().reverse();
+            let myTime = getMyanmarTime();
+            let curH = myTime.getHours();
+            let curM = myTime.getMinutes();
+            let curS = myTime.getSeconds();
+            let curTotalSec = curH * 3600 + curM * 60 + curS;
+
+            let year = myTime.getFullYear();
+            let month = String(myTime.getMonth() + 1).padStart(2, '0');
+            let day = String(myTime.getDate()).padStart(2, '0');
+            let currentDateStr = `${year}-${month}-${day}`;
+
+            if(sortedDates.length === 0) {
+                historyBody.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No records found.</div>';
+            } else {
+                sortedDates.forEach(dateKey => {
+                    let slots = memoryHistory[dateKey];
+                    let dateSection = document.createElement('div');
+                    dateSection.innerHTML = `
+                        <div class="history-date-container">
+                            <div class="history-date-badge">${dateKey}</div>
+                        </div>
+                        <div class="history-grid" id="grid-${dateKey}"></div>
+                    `;
+                    historyBody.appendChild(dateSection);
+
+                    let gridContainer = document.getElementById(`grid-${dateKey}`);
+                    if(Array.isArray(slots)) {
+                        slots.forEach(slot => {
+                            let parts = slot.timeText.split(' ');
+                            let tTime = parts[0] || slot.timeText;
+                            let tAmpm = parts[1] || '';
+
+                            let slotTotalSec = Number(slot.hour) * 3600 + Number(slot.min) * 60;
+                            let displayRes = "??";
+
+                            if (dateKey === currentDateStr) {
+                                if (curTotalSec >= slotTotalSec && slot.result && slot.result !== "??") {
+                                    displayRes = slot.result;
+                                }
+                            } else {
+                                displayRes = slot.result || "??";
+                            }
+
+                            gridContainer.innerHTML += `
+                                <div class="history-slot-card">
+                                    <div class="time-text"><span>${tTime}</span> <span>${tAmpm}</span></div>
+                                    <div class="slot-result">${displayRes}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                });
+            }
+
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        let pressTimer;
+        const adminTrigger = document.getElementById('adminTrigger');
+        
+        const openAdmin = () => {
+            let pw = prompt("Enter Admin Password:");
+            if(pw === "859042") {
+                document.getElementById('adm-isClosed').checked = cloudData.isClosed;
+                populateAdminInputs();
+                document.getElementById('adminModal').style.display = 'flex';
+            } else if(pw !== null) {
+                alert("Incorrect Password.");
+            }
+        };
+
+        function populateAdminInputs() {
+            let container = document.getElementById('admin-slots-inputs');
+            container.innerHTML = '<div class="admin-section-title">2D Results & Times</div>';
+            
+            if(Array.isArray(cloudData.slots)) {
+                cloudData.slots.forEach((slot, idx) => {
+                    container.innerHTML += `
+                        <div class="admin-row">
+                            <input type="text" class="time-input" id="adm-time-${idx}" value="${slot.timeText}" placeholder="Time">
+                            <input type="text" class="res-input" id="adm-res-${idx}" value="${slot.result}" placeholder="Result">
+                        </div>
+                        <div style="font-size:12px; color:#666; margin-bottom:10px;">Hour (24h): <input type="number" id="adm-hour-${idx}" value="${slot.hour}" style="width:60px; padding:3px;"> Min: <input type="number" id="adm-min-${idx}" value="${slot.min}" style="width:60px; padding:3px;"></div>
+                    `;
+                });
+            }
+
+            renderAdmin3DInputs();
+        }
+
+        function renderAdmin3DInputs() {
+            let container3D = document.getElementById('admin-3d-inputs');
+            container3D.innerHTML = '';
+            let t3dList = cloudData.thai3d || defaultThai3D;
+            t3dList.forEach((item, idx) => {
+                container3D.innerHTML += `
+                    <div class="admin-row" id="adm-3d-row-${idx}">
+                        <input type="text" id="adm-3d-date-${idx}" value="${item.date}" placeholder="Date (DD/MM/YYYY)" style="width: 45%;">
+                        <input type="text" id="adm-3d-res-${idx}" value="${item.result}" placeholder="3D" style="width: 35%;">
+                        <button type="button" onclick="remove3DRow(${idx})" style="background:#d32f2f; color:white; border:none; padding:8px 10px; border-radius:6px; cursor:pointer; width: 15%;">Del</button>
+                    </div>
+                `;
+            });
+        }
+
+        function addNew3DRow() {
+            if(!cloudData.thai3d) cloudData.thai3d = [];
+            cloudData.thai3d.unshift({ date: "", result: "" });
+            renderAdmin3DInputs();
+        }
+
+        function remove3DRow(idx) {
+            let t3dList = cloudData.thai3d || defaultThai3D;
+            t3dList.splice(idx, 1);
+            renderAdmin3DInputs();
+        }
+
+        function deleteHistoryByCalendar() {
+            let selectedDate = document.getElementById('adm-delete-date').value;
+            if(!selectedDate) {
+                alert("Please select a date first.");
+                return;
+            }
+
+            if(memoryHistory[selectedDate]) {
+                if(confirm(`Are you sure you want to delete records for (${selectedDate})?`)) {
+                    delete memoryHistory[selectedDate];
+                    saveLocalHistory();
+                    alert(`Record for (${selectedDate}) deleted successfully. ✅`);
+                    document.getElementById('adm-delete-date').value = '';
+                }
+            } else {
+                alert(`No records found for (${selectedDate}).`);
+            }
+        }
+
+        async function saveAdminData() {
+            cloudData.isClosed = document.getElementById('adm-isClosed').checked;
+            if(Array.isArray(cloudData.slots)) {
+                cloudData.slots.forEach((slot, idx) => {
+                    let tText = document.getElementById(`adm-time-${idx}`).value;
+                    let rVal = document.getElementById(`adm-res-${idx}`).value;
+                    let hVal = parseInt(document.getElementById(`adm-hour-${idx}`).value);
+                    let mVal = parseInt(document.getElementById(`adm-min-${idx}`).value);
+
+                    slot.timeText = tText;
+                    slot.result = rVal;
+                    slot.hour = isNaN(hVal) ? slot.hour : hVal;
+                    slot.min = isNaN(mVal) ? slot.min : mVal;
+                });
+            }
+
+            let t3dList = cloudData.thai3d || defaultThai3D;
+            let new3DArr = [];
+            t3dList.forEach((item, idx) => {
+                let dEl = document.getElementById(`adm-3d-date-${idx}`);
+                let rEl = document.getElementById(`adm-3d-res-${idx}`);
+                if(dEl && rEl) {
+                    new3DArr.push({ date: dEl.value, result: rEl.value });
+                }
+            });
+            cloudData.thai3d = new3DArr;
+
+            let myTime = getMyanmarTime();
+            let year = myTime.getFullYear();
+            let month = String(myTime.getMonth() + 1).padStart(2, '0');
+            let day = String(myTime.getDate()).padStart(2, '0');
+            updateMemoryHistory(`${year}-${month}-${day}`, cloudData.slots);
+
+            try {
+                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify(cloudData)
+                });
+                if(res.ok) {
+                    alert("Data saved successfully. ✅");
+                    document.getElementById('adminModal').style.display = 'none';
+                    renderUI();
+                } else {
+                    alert("Failed to save data. Please try again.");
+                }
+            } catch(e) {
+                alert("Network connection error.");
+            }
+        }
+
+        async function resetAdminData() {
+            if(confirm("Are you sure you want to reset all data to default (??)?")) {
+                cloudData.slots = JSON.parse(JSON.stringify(defaultSlots));
+                cloudData.thai3d = JSON.parse(JSON.stringify(defaultThai3D));
+                cloudData.isClosed = false;
+                try {
+                    let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': API_KEY
+                        },
+                        body: JSON.stringify(cloudData)
+                    });
+                    if(res.ok) {
+                        alert("Reset completed successfully. ✅");
+                        document.getElementById('adm-isClosed').checked = false;
+                        populateAdminInputs();
+                        renderUI();
+                    } else {
+                        alert("Failed to reset data.");
+                    }
+                } catch(e) {
+                    alert("Network connection error.");
+                }
+            }
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        adminTrigger.addEventListener('mousedown', () => pressTimer = setTimeout(openAdmin, 4000));
+        adminTrigger.addEventListener('mouseup', () => clearTimeout(pressTimer));
+        adminTrigger.addEventListener('touchstart', () => pressTimer = setTimeout(openAdmin, 4000));
+        adminTrigger.addEventListener('touchend', () => clearTimeout(pressTimer));
+
+        fetchCloudData();
+        setInterval(fetchCloudData, 10000);
+        setInterval(renderUI, 1000);
+    </script>
+</body>
+</html>
